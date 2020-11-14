@@ -80,7 +80,9 @@ static inline int PyModule_AddObject_DECREF(PyObject *module, const char *name, 
 
 void PythonQt::init(int flags, const QByteArray& pythonQtModuleName)
 {
-  if (!_self) {
+  if (_self)
+      return; // do nothing if PythonQt object is already defined
+
     _self = new PythonQt(flags, pythonQtModuleName);
 
     _self->_p->_PythonQtObjectPtr_metaId = qRegisterMetaType<PythonQtObjectPtr>("PythonQtObjectPtr");
@@ -123,8 +125,8 @@ void PythonQt::init(int flags, const QByteArray& pythonQtModuleName)
     PythonQtRegisterToolClassesTemplateConverter(quint32);
     PythonQtRegisterToolClassesTemplateConverter(qint64);
     PythonQtRegisterToolClassesTemplateConverter(quint64);
-    
-#ifdef PYTHONQT_SUPPORT_ML_TYPES
+
+    #ifdef PYTHONQT_SUPPORT_ML_TYPES
     PythonQtMethodInfo::addParameterTypeAlias("QList<MLfloat>", "QList<float>");
     PythonQtMethodInfo::addParameterTypeAlias("QVector<MLfloat>", "QVector<float>");
     PythonQtMethodInfo::addParameterTypeAlias("QList<MLdouble>", "QList<double>");
@@ -143,7 +145,7 @@ void PythonQt::init(int flags, const QByteArray& pythonQtModuleName)
     PythonQtMethodInfo::addParameterTypeAlias("QVector<MLuint>", "QVector<quint64>");
     PythonQtMethodInfo::addParameterTypeAlias("QList<MLint>", "QList<qint64>");
     PythonQtMethodInfo::addParameterTypeAlias("QVector<MLint>", "QVector<qint64>");
-#endif
+    #endif
 
     PythonQtMethodInfo::addParameterTypeAlias("QList<qreal>", "QList<double>");
     PythonQtMethodInfo::addParameterTypeAlias("QVector<qreal>", "QVector<double>");
@@ -275,7 +277,7 @@ void PythonQt::init(int flags, const QByteArray& pythonQtModuleName)
       "QtFatalMsg",
       "QtSystemMsg"
     };
-    
+
     for (int i = 0; i<sizeof(enumValues)/sizeof(int); i++) {
       PyObject* obj = PyInt_FromLong(enumValues[i]);
       PyModule_AddObject_DECREF(pack, enumNames[i], obj);
@@ -292,7 +294,6 @@ void PythonQt::init(int flags, const QByteArray& pythonQtModuleName)
     PyModule_AddObject_DECREF(pack, "Signal", (PyObject*)&PythonQtSignalFunction_Type);
     PyModule_AddObject_DECREF(pack, "Property", (PyObject*)&PythonQtProperty_Type);
 
-  }
 }
 
 void PythonQt::cleanup()
